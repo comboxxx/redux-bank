@@ -57,7 +57,7 @@ export function updateData(balance) {
         payload: balance
     }
 }
-
+//55555
 export function sendWithdrawDataToFirebase(amount) {
     return (dispatch, getState) => {
         const { CurrentUser } = getState()
