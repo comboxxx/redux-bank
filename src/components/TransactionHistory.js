@@ -9,19 +9,19 @@ const TransactionHistory = (props) => {
         <table className="table is-striped is-bordered">
             <thead>
                 <tr>
-                    <th>หมายเลขบัญชี</th>
                     <th>ประเภทธุรกรรม</th>
                     <th>จำนวนเงิน</th>
                     <th>วัน&เวลา</th>
+                    <th>หมายเหตุ</th>
                 </tr>
             </thead>
             <tbody>
                 {histories.map((history, i) => {
                     return <tr>
-                    <td>{history.accountNumber}</td>
                     <td>{history.type}</td>
                     <td>{history.amount}</td>
                     <td>{moment(history.timestamp).format("HH:mm:ss  DD/MMMM/YYYY ")  }</td>
+                    <td>{history.remark}</td>
                     </tr>
                 })}
             </tbody>

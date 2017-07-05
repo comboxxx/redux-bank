@@ -5,18 +5,21 @@ import FormPin from './FormPin'
 import { pinVisible, modalVisible } from '../actions/UI'
 import UserInfoTopRight from './UserInfoTopRight'
 import UserInfoBody from './UserInfoBody'
-import { addCurrentUser, sendDepositDataToFirebase, sendWithdrawDataToFirebase } from '../actions/CurrentUser'
+import { addCurrentUser, sendDepositDataToFirebase, sendWithdrawDataToFirebase,sendMoneyTransferDataToFirebase } from '../actions/CurrentUser'
 import _ from 'lodash'
 import TransactionModal from './TransactionModal'
 import { transactionHistory } from '../actions/TransactionHistory'
 import TransactionHistory from './TransactionHistory'
+
 class UserAccount extends Component {
     constructor(props) {
         super(props)
         this.state = {
             topic: '',
             buttons: [],
-            label: ''
+            label: '',
+            labelReciever: ''
+
         }
         this.switchVisible = this.switchVisible.bind(this)
         this.addCurrentUser = this.addCurrentUser.bind(this)
@@ -25,6 +28,8 @@ class UserAccount extends Component {
         this.deposit = this.deposit.bind(this)
         this.openWithdrawModal = this.openWithdrawModal.bind(this)
         this.withdraw = this.withdraw.bind(this)
+        this.openMoneyTransferModal = this.openMoneyTransferModal.bind(this)
+        this.moneyTransfer = this.moneyTransfer.bind(this)
 
     }
     openDepositModal() {
@@ -75,8 +80,33 @@ class UserAccount extends Component {
         }
 
     }
+    openMoneyTransferModal() {
+        let button = []
+        button.push(<button className="button is-primary" onClick={() => this.moneyTransfer()} >ตกลง</button>)
+        button.push(<button className="button" onClick={() => this.switchVisible("transaction", false)}>ยกเลิก</button>)
+        this.setState({
+            topic: "โอนเงิน",
+            buttons: button,
+            label: "จำนวนเงินที่ต้องการโอน",
+            labelReciever: "หมายเลขบัญชีผู้รับเงิน"
+        })
+        this.props.transactionModalVisible(true)
+    }
+    moneyTransfer() {
 
+        const { sendMoneyTransferDataToFirebase, form } = this.props
+        this.switchVisible("transaction", false)
+        let amount = form.TransactionForm.values.amount
+        let recieverAccountNumber = form.TransactionForm.values.reciverAccountNumber
+        if (form.TransactionForm.values) {
+            sendMoneyTransferDataToFirebase(amount,recieverAccountNumber)
+        }
+        else {
+            alert("กรุณาระบุจำนวนเงินที่ต้องการฝาก")
 
+        }
+
+    }
 
 
     addCurrentUser() {
@@ -120,13 +150,13 @@ class UserAccount extends Component {
 
     }
     render() {
-        let { topic, buttons, label } = this.state
-        let { pinUI, userInfo, CurrentUser, transactionModal, Loading, histories , balance} = this.props
+        let { topic, buttons, label, labelReciever  } = this.state
+        let { pinUI, userInfo, CurrentUser, transactionModal, Loading, histories, balance } = this.props
         return (
             <div className="container">
                 {
                     transactionModal &&
-                    <TransactionModal label={label} topic={topic} buttons={buttons} close={this.switchVisible} user={CurrentUser} />
+                    <TransactionModal  labelReciever={labelReciever} label={label} topic={topic} buttons={buttons} close={this.switchVisible} user={CurrentUser} />
                 }
                 {
                     userInfo &&
@@ -143,9 +173,9 @@ class UserAccount extends Component {
                         <FormPin addCurrentUser={this.addCurrentUser} Loading={Loading} />
                     </div>}
                 {userInfo && <div>
-                    <UserInfoBody userDetail={CurrentUser}   balance={balance}   />
+                    <UserInfoBody userDetail={CurrentUser} balance={balance} />
                     <center><h1 className="title">เลือกทำรายการ</h1>
-                        <button className="button is-primary" disabled>โอน</button>&nbsp;
+                        <button onClick={() => this.openMoneyTransferModal()} className="button is-primary">โอน</button>&nbsp;
         <button onClick={() => this.openDepositModal()} className="button is-primary">ฝาก</button>&nbsp;
         <button className="button is-primary" onClick={() => this.openWithdrawModal()}>ถอน</button></center>
                     <br />
@@ -161,7 +191,7 @@ function mapStatetoProps(state) {
     let { form, UI, User, CurrentUser, Loading, TransactionHistory } = state
 
     let balance = _.reduce(TransactionHistory, function (sum, history) {
-        return sum + parseInt (history.amount)
+        return sum + parseInt(history.amount)
     }, 0);
 
     return {
@@ -196,7 +226,11 @@ const mapDispatchtoProps = (dispatch) => {
         },
         sendWithdrawDataToFirebase(amount) {
             dispatch(sendWithdrawDataToFirebase(amount))
-        },
+        },sendMoneyTransferDataToFirebase(amount,recieverAccountNumber)
+        {
+            dispatch(sendMoneyTransferDataToFirebase(amount,recieverAccountNumber))
+        }
+        ,
         transactionHistory(accountNumber) {
             dispatch(transactionHistory(accountNumber))
         }

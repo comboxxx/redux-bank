@@ -36,9 +36,9 @@ export function sendDepositDataToFirebase(amount) {
     return (dispatch, getState) => {
         const { CurrentUser } = getState()
         let balance = CurrentUser.balance + parseInt(amount)
-        let newData = Object.assign({}, { ...CurrentUser }, { balance: balance, key: null })
-        let updateRef = userRef.child(CurrentUser.key)
-        updateRef.update(newData)
+        // let newData = Object.assign({}, { ...CurrentUser }, { balance: balance, key: null })
+        // let updateRef = userRef.child(CurrentUser.key)
+        // updateRef.update(newData)
         transactionHistoryRef.push({
             accountNumber: CurrentUser.key,
             amount: parseInt(amount),
@@ -62,16 +62,35 @@ export function sendWithdrawDataToFirebase(amount) {
     return (dispatch, getState) => {
         const { CurrentUser } = getState()
         let balance = CurrentUser.balance - parseInt(amount)
-        let newData = Object.assign({}, { ...CurrentUser }, { balance: balance, key: null })
-        let updateRef = userRef.child(CurrentUser.key)
-        updateRef.update(newData)
+        // let newData = Object.assign({}, { ...CurrentUser }, { balance: balance, key: null })
+        // let updateRef = userRef.child(CurrentUser.key)
+        // updateRef.update(newData)
         transactionHistoryRef.push({
             accountNumber: CurrentUser.key, amount: -parseInt(amount),
             type: "withdraw", timestamp: moment().format()
         })
         dispatch(updateData(balance))
-        dispatch(updateData(balance))
+    }
 
+}
+
+export function sendMoneyTransferDataToFirebase(amount,recieverAccountNumber) {
+    return (dispatch, getState) => {
+        const { CurrentUser } = getState()
+        let balance = CurrentUser.balance - parseInt(amount)
+        // let newData = Object.assign({}, { ...CurrentUser }, { balance: balance, key: null })
+        // let updateRef = userRef.child(CurrentUser.key)
+        // updateRef.update(newData)
+        transactionHistoryRef.push({
+            accountNumber: CurrentUser.key, amount: -parseInt(amount),
+            type: "transfer", timestamp: moment().format() ,remark: "ผู้รับ: "+ recieverAccountNumber
+        })
+
+        transactionHistoryRef.push({
+            accountNumber: recieverAccountNumber, amount: parseInt(amount),
+            type: "recieve", timestamp: moment().format(),remark: "ผู้โอน: "+ CurrentUser.key
+        })
+        dispatch(updateData(balance))
     }
 
 }
